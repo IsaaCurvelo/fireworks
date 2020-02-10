@@ -1,5 +1,4 @@
 import sys
-import random
 import numpy as np
 from scipy.optimize import rosen
 
@@ -21,11 +20,15 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
                                           n, d)
     for t in range(iterations):
 #        print("iteration " + str(t) + ":")
-        for f in range(n):
+        all_sparks = np.array(fireworks)
+        
+        for i in range(n):
+            # compute si
+            si = m * (np.max(fitness) - fitness[i] + epsilon) / (np.sum(max(fitness) - fitness) + epsilon)
+            print('\nindividual: ' + str(fireworks[i, :]))
+            print('fitness: ' + str(fitness[i]))            
             
-            si = m * (np.max(fitness) - fitness[f] + epsilon) / (np.sum(max(fitness) - fitness) + epsilon)
-            print('\nfitness: ' + str(fitness[f]))            
-            
+            # bound si to am and bm
             if si < a * m:
                 si = int(round(a * m))
             elif si > b * m:
@@ -35,24 +38,44 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
             
             print('number of sparks: ' + str(si))
             
+            # compute A
+            ai = big_a_hat * (fitness[i] - np.min(fitness) + epsilon) / (np.sum(fitness - np.min(fitness)) + epsilon)
             
-            ai = big_a_hat * (fitness[f] - np.min(fitness) + epsilon) / (np.sum(fitness - np.min(fitness)) + epsilon)
             print('explosion radius: ' + str(ai))
+            sparks_i = np.zeros((si, d))
             
             for s in range(si):
-                spark = fireworks[f, :]
-                print(spark)
+                sparks_i[s, :] = fireworks[i, :]
                 
-                z = round(d * random.random())
-                print('dimensions to be affected: ' + str(z))
+                z = round(d * np.random.random())
+                z = np.random.choice(range(d), z, replace=False)
+                
+                print('\ndimensions to be affected(' + str(len(z)) +'): ' + str(z))
+                
+                # perform linear displacement
+                h = ai * np.random.uniform(-1, 1)
+                sparks_i[s, z] = sparks_i[s, z] + h
+                
+                # map sparks back to the viable solutions space
+                idx = np.where(sparks_i[s, :] < lwr_bnd)
+                sparks_i[s, idx] = lwr_bnd[idx]
+                idx = np.where(sparks_i[s, :] > upp_bnd)
+                sparks_i[s, idx] = upp_bnd[idx]
+                
+                print('spark [' + str(s) +']: ' + str(sparks_i[s, :]))
             
-            
+            print('sparks generated: ' + str(sparks_i))
+                
+            np.concatenate((s, n), axis = 0)
             
     return fireworks, fitness
 
 
 
-random.seed(1)
+dimensions = 5
 np.random.seed(1)
 
-fa(rosen, 5, -5, iterations=1, d=3)
+lwr_bnd = np.repeat(-5, dimensions)
+upp_bnd = np.repeat(5, dimensions)
+
+fa(rosen, lwr_bnd, upp_bnd, iterations=1, d=dimensions)
