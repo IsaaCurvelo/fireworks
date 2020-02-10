@@ -20,22 +20,33 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
     fireworks, fitness = create_fireworks(fitness_function, lwr_bnd, upp_bnd,
                                           n, d)
     for t in range(iterations):
-        print("iteration " + str(t) + ":")
+#        print("iteration " + str(t) + ":")
         for f in range(n):
             
             si = m * (np.max(fitness) - fitness[f] + epsilon) / (np.sum(max(fitness) - fitness) + epsilon)
-            
-            # print(si)
-            
+            print('\nfitness: ' + str(fitness[f]))            
             
             if si < a * m:
-                si = round(a * m)
+                si = int(round(a * m))
             elif si > b * m:
-                si = round(b * m)
+                si = int(round(b * m))
             else:
-                si = round(si)
+                si = int(round(si))
             
-            print('rounded si: ' + str(si))
+            print('number of sparks: ' + str(si))
+            
+            
+            ai = big_a_hat * (fitness[f] - np.min(fitness) + epsilon) / (np.sum(fitness - np.min(fitness)) + epsilon)
+            print('explosion radius: ' + str(ai))
+            
+            for s in range(si):
+                spark = fireworks[f, :]
+                print(spark)
+                
+                z = round(d * random.random())
+                print('dimensions to be affected: ' + str(z))
+            
+            
             
     return fireworks, fitness
 
@@ -44,4 +55,4 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
 random.seed(1)
 np.random.seed(1)
 
-fa(rosen, 5, -5, iterations=1)
+fa(rosen, 5, -5, iterations=1, d=3)
