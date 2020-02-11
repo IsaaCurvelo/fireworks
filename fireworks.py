@@ -43,7 +43,7 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
             
             print('explosion radius: ' + str(ai))
             sparks_i = np.zeros((si, d))
-            
+
             for s in range(si):
                 sparks_i[s, :] = fireworks[i, :]
                 
@@ -56,7 +56,7 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
                 h = ai * np.random.uniform(-1, 1)
                 sparks_i[s, z] = sparks_i[s, z] + h
                 
-                # map sparks back to the viable solutions space
+                # map sparks back to the search space
                 idx = np.where(sparks_i[s, :] < lwr_bnd)
                 sparks_i[s, idx] = lwr_bnd[idx]
                 idx = np.where(sparks_i[s, :] > upp_bnd)
@@ -64,9 +64,17 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
                 
                 print('spark [' + str(s) +']: ' + str(sparks_i[s, :]))
             
-            print('sparks generated: ' + str(sparks_i))
+#            print('sparks generated: ' + str(sparks_i))
                 
-            np.concatenate((s, n), axis = 0)
+#            np.concatenate((s, n), axis = 0)
+            all_sparks = np.concatenate((all_sparks, sparks_i), axis = 0)
+        
+        idx = np.random.choice(range(len(all_sparks)), mg, replace = True)
+        print("--->" + str(idx))
+        print(len(all_sparks))
+        print(all_sparks[idx, :])
+            
+            
             
     return fireworks, fitness
 
