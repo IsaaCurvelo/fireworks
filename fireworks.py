@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import rosen
+from scipy.spatial import distance_matrix
 
 epsilon = np.finfo(float).eps
 
@@ -72,18 +73,19 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
 #            np.concatenate((s, n), axis = 0)
             all_sparks = np.concatenate((all_sparks, sparks_i), axis = 0)
         
-#        perform gaussian displacement
+#        choose individuals for gaussian displacement
         idx = np.random.choice(range(len(all_sparks)), mg, replace = True)
         print("size of all_sparks: " + str(len(all_sparks)))
         print("performing gaussian explosions on: " + str(idx))
         
         gaussian_sparks = np.array(all_sparks[idx, :])
        
-        print("\nchosen sparks for gaussian: \n" + str(gaussian_sparks))
+        print("\nchosen sparks for gauss explosion : \n" + str(gaussian_sparks))
         
         for i in range(mg):
             z = round(d * np.random.random())
             z = np.random.choice(range(d), z, replace=False)
+#            perform gaussian displacement
             g = np.random.normal(1, 1)
             gaussian_sparks[i, z] = gaussian_sparks[i, z] * g
             
@@ -94,8 +96,29 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
             gaussian_sparks[i, idx] = upp_bnd[idx]
         
         all_sparks = np.concatenate((all_sparks, gaussian_sparks), axis = 0)
+        all_fitnesses = np.apply_along_axis(fitness_function, 1, all_sparks)
+        
+        #extract best individual
+        x_star_idx = np.where(all_fitnesses == np.min(all_fitnesses))[0]
+        x_star = all_sparks[x_star_idx, :]
+        all_sparks = np.delete(all_sparks, x_star_idx, axis = 0)
+        
+        print("min:" + str(x_star_idx))
 
 #        compute selection probability
+        overall_distance = np.sum(distance_matrix(all_sparks, all_sparks), 
+                                  axis=0)
+        
+        p = np.divide(overall_distance, np.sum(overall_distance))
+        
+        #extract n-1 indexes with p
+        p_indexes = np.random.choice(range(len(all_sparks)), n - 1, 
+                                     replace = False, p=p)
+        
+        print("\n" + str(overall_distance))
+        
+        fireworks[0 ,:] =  x_star
+        fireworks[range(1, n), :] = all_sparks[p_indexes, :]
         
         
         
