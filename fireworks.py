@@ -1,8 +1,7 @@
-import sys
 import numpy as np
 from scipy.optimize import rosen
 
-epsilon = sys.float_info.epsilon
+epsilon = np.finfo(float).eps
 
 #np.flatnonzero(x<0.5)
 
@@ -23,12 +22,14 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
         all_sparks = np.array(fireworks)
         
         for i in range(n):
-            # compute si
-            si = m * (np.max(fitness) - fitness[i] + epsilon) / (np.sum(max(fitness) - fitness) + epsilon)
+#             compute si
+            si = m * (np.max(fitness) - fitness[i] + epsilon) /\
+            (np.sum(max(fitness) - fitness) + epsilon)
+            
             print('\nindividual: ' + str(fireworks[i, :]))
             print('fitness: ' + str(fitness[i]))            
             
-            # bound si to am and bm
+#             bound si to am and bm
             if si < a * m:
                 si = int(round(a * m))
             elif si > b * m:
@@ -38,8 +39,9 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
             
             print('number of sparks: ' + str(si))
             
-            # compute A
-            ai = big_a_hat * (fitness[i] - np.min(fitness) + epsilon) / (np.sum(fitness - np.min(fitness)) + epsilon)
+#             compute A
+            ai = big_a_hat * (fitness[i] - np.min(fitness) + epsilon) /\
+            (np.sum(fitness - np.min(fitness)) + epsilon)
             
             print('explosion radius: ' + str(ai))
             sparks_i = np.zeros((si, d))
@@ -50,13 +52,14 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
                 z = round(d * np.random.random())
                 z = np.random.choice(range(d), z, replace=False)
                 
-                print('\ndimensions to be affected(' + str(len(z)) +'): ' + str(z))
+                print('\ndimensions to be affected(' + str(len(z)) +'): ' 
+                      + str(z))
                 
-                # perform linear displacement
+#                 perform linear displacement
                 h = ai * np.random.uniform(-1, 1)
                 sparks_i[s, z] = sparks_i[s, z] + h
                 
-                # map sparks back to the search space
+#                map sparks back to the search space
                 idx = np.where(sparks_i[s, :] < lwr_bnd)
                 sparks_i[s, idx] = lwr_bnd[idx]
                 idx = np.where(sparks_i[s, :] > upp_bnd)
@@ -69,13 +72,34 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
 #            np.concatenate((s, n), axis = 0)
             all_sparks = np.concatenate((all_sparks, sparks_i), axis = 0)
         
+#        perform gaussian displacement
         idx = np.random.choice(range(len(all_sparks)), mg, replace = True)
-        print("--->" + str(idx))
-        print(len(all_sparks))
-        print(all_sparks[idx, :])
+        print("size of all_sparks: " + str(len(all_sparks)))
+        print("performing gaussian explosions on: " + str(idx))
+        
+        gaussian_sparks = np.array(all_sparks[idx, :])
+       
+        print("\nchosen sparks for gaussian: \n" + str(gaussian_sparks))
+        
+        for i in range(mg):
+            z = round(d * np.random.random())
+            z = np.random.choice(range(d), z, replace=False)
+            g = np.random.normal(1, 1)
+            gaussian_sparks[i, z] = gaussian_sparks[i, z] * g
             
-            
-            
+#            map sparks back to the search space
+            idx = np.where(gaussian_sparks[i, :] < lwr_bnd)
+            gaussian_sparks[i, idx] = lwr_bnd[idx]
+            idx = np.where(gaussian_sparks[i, :] > upp_bnd)
+            gaussian_sparks[i, idx] = upp_bnd[idx]
+        
+        all_sparks = np.concatenate((all_sparks, gaussian_sparks), axis = 0)
+
+#        compute selection probability
+        
+        
+        
+    print("end")
     return fireworks, fitness
 
 
@@ -86,4 +110,4 @@ np.random.seed(1)
 lwr_bnd = np.repeat(-5, dimensions)
 upp_bnd = np.repeat(5, dimensions)
 
-fa(rosen, lwr_bnd, upp_bnd, iterations=1, d=dimensions)
+fa(rosen, lwr_bnd, upp_bnd, d=dimensions, iterations=1, m = 10)
