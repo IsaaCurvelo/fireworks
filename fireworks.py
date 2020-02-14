@@ -93,6 +93,8 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
             idx = np.where(gaussian_sparks[i, :] > upp_bnd)
             gaussian_sparks[i, idx] = upp_bnd[idx]
         
+        print('numero de chamadas: ' + str(len(all_sparks)))
+        
         all_sparks = np.concatenate((all_sparks, gaussian_sparks), axis = 0)
         all_fitnesses = np.apply_along_axis(fitness_function, 1, all_sparks)
         
@@ -102,7 +104,7 @@ def fa(fitness_function, lwr_bnd, upp_bnd, n = 5, d = 30,  iterations = 500,
         x_star_fit = all_fitnesses[x_star_idx]
         
         #print("\nbest individual:" + str(x_star))
-        #print("best fitness:" + str(x_star_fit))
+        print(x_star_fit)
         
         all_sparks = np.delete(all_sparks, x_star_idx, axis = 0)
         all_fitnesses = np.delete(all_fitnesses, x_star_idx)
@@ -138,3 +140,8 @@ lwr_bnd = np.repeat(-5, dimensions)
 upp_bnd = np.repeat(5, dimensions)
 
 fw, ft = fa(rosen, lwr_bnd, upp_bnd, d=dimensions, iterations=500, m = 50)
+
+
+for r in range(1):
+    fw, ft = fa(rosen, lwr_bnd, upp_bnd, d=dimensions, iterations=500, m = 40)
+    print(min(ft))
